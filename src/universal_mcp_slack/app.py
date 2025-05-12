@@ -7,6 +7,32 @@ class SlackApp(APIApplication):
         super().__init__(name='slackapp', integration=integration, **kwargs)
         self.base_url = "https://slack.com/api"
 
+    def adminapps_approve_app_installation(self, app_id=None, request_id=None, team_id=None) -> dict[str, Any]:
+        """
+        Approves an app install request for a specific workspace or across an entire enterprise using the Slack App Management API.
+
+        Args:
+            app_id (string): The id of the app to approve.
+            request_id (string): The id of the request to approve.
+            team_id (string): team_id
+
+        Returns:
+            dict[str, Any]: Typical success response
+
+        Tags:
+            admin.apps, admin
+        """
+        request_body = {
+            'app_id': app_id,
+            'request_id': request_id,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
+        url = f"{self.base_url}/admin.apps.approve"
+        query_params = {}
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
+        response.raise_for_status()
+        return response.json()
 
     def adminappsapproved_list(self, token, limit=None, cursor=None, team_id=None, enterprise_id=None) -> dict[str, Any]:
         """
@@ -53,6 +79,33 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
+    def adminapps_restrict_app(self, app_id=None, request_id=None, team_id=None) -> dict[str, Any]:
+        """
+        Restricts an app for installation on a specific workspace or across an entire enterprise using the Slack API, preventing future installations while retaining existing ones.
+
+        Args:
+            app_id (string): The id of the app to restrict.
+            request_id (string): The id of the request to restrict.
+            team_id (string): team_id
+
+        Returns:
+            dict[str, Any]: Typical success response
+
+        Tags:
+            admin.apps, admin
+        """
+        request_body = {
+            'app_id': app_id,
+            'request_id': request_id,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
+        url = f"{self.base_url}/admin.apps.restrict"
+        query_params = {}
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
+        response.raise_for_status()
+        return response.json()
+
     def adminappsrestricted_get_list(self, token, limit=None, cursor=None, team_id=None, enterprise_id=None) -> dict[str, Any]:
         """
         Retrieves a list of restricted apps for a team or enterprise using the Slack API, allowing administrators to manage app restrictions based on provided parameters such as team ID, enterprise ID, and pagination options.
@@ -76,73 +129,113 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def adminconversations_archive_channel(self) -> dict[str, Any]:
+    def adminconversations_archive_channel(self, channel_id) -> dict[str, Any]:
         """
         Archives a public or private channel across an entire Enterprise Grid organization using an admin-level token with the required scope.
 
+        Args:
+            channel_id (string): The channel to archive.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.conversations, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.archive"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminconversations_convert_to_private_channel(self) -> dict[str, Any]:
+    def adminconversations_convert_to_private_channel(self, channel_id) -> dict[str, Any]:
         """
         Converts a public channel to a private channel in Slack using the admin API, available only for Enterprise Grid workspaces.
 
+        Args:
+            channel_id (string): The channel to convert to private.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.conversations, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.convertToPrivate"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminconversations_create_channel_based_conversation(self) -> dict[str, Any]:
+    def adminconversations_create_channel_based_conversation(self, is_private, name, description=None, org_wide=None, team_id=None) -> dict[str, Any]:
         """
         Creates a new public or private channel in an Enterprise Grid organization using the Slack Admin API, requiring the `admin.conversations:write` scope.
 
+        Args:
+            is_private (boolean): When `true`, creates a private channel instead of a public channel
+            name (string): Name of the public or private channel to create.
+            description (string): Description of the public or private channel to create.
+            org_wide (boolean): When `true`, the channel will be available org-wide. Note: if the channel is not `org_wide=true`, you must specify a `team_id` for this channel
+            team_id (string): The workspace to create the channel in. Note: this argument is required unless you set `org_wide=true`.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.conversations, admin
         """
+        request_body = {
+            'description': description,
+            'is_private': is_private,
+            'name': name,
+            'org_wide': org_wide,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.create"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminconversations_delete_channel(self) -> dict[str, Any]:
+    def adminconversations_delete_channel(self, channel_id) -> dict[str, Any]:
         """
         Deletes a public or private channel using the Slack API and returns a success status message.
 
+        Args:
+            channel_id (string): The channel to delete.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.conversations, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.delete"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminconversations_disconnect_shared_channel(self) -> dict[str, Any]:
+    def adminconversations_disconnect_shared_channel(self, channel_id, leaving_team_ids=None) -> dict[str, Any]:
         """
         Disconnects one or more workspaces from a connected channel using the Slack Admin API, requiring an authentication token with the `admin.conversations:write` scope.
+
+        Args:
+            channel_id (string): The channel to be disconnected from some workspaces.
+            leaving_team_ids (string): The team to be removed from the channel. Currently only a single team id can be specified.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -150,9 +243,14 @@ class SlackApp(APIApplication):
         Tags:
             admin.conversations, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+            'leaving_team_ids': leaving_team_ids,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.disconnectShared"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -219,41 +317,65 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def adminconversations_invite_user_to_channel(self) -> dict[str, Any]:
+    def adminconversations_invite_user_to_channel(self, channel_id, user_ids) -> dict[str, Any]:
         """
         Invites users to a public or private channel using the Slack Admin API, requiring an authentication token with the `admin.conversations:write` scope.
 
+        Args:
+            channel_id (string): The channel that the users will be invited to.
+            user_ids (string): The users to invite.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.conversations, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+            'user_ids': user_ids,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.invite"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminconversations_rename_channel(self) -> dict[str, Any]:
+    def adminconversations_rename_channel(self, channel_id, name) -> dict[str, Any]:
         """
         Renames a public or private channel in an Enterprise Grid workspace using admin privileges.
 
+        Args:
+            channel_id (string): The channel to rename.
+            name (string): name
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.conversations, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+            'name': name,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.rename"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminconversationsrestrict_access_add_group_idp_groups(self) -> dict[str, Any]:
+    def adminconversationsrestrict_access_add_group_idp_groups(self, channel_id, group_id, token, team_id=None) -> dict[str, Any]:
         """
         Adds an IDP group to a private Slack channel's allowlist, allowing only members of the specified group to access the channel, requiring the `admin.conversations:write` OAuth scope.
+
+        Args:
+            channel_id (string): The channel to link this group to.
+            group_id (string): The [IDP Group](https://slack.com/help/articles/115001435788-Connect-identity-provider-groups-to-your-Enterprise-Grid-org) ID to be an allowlist for the private channel.
+            token (string): Authentication token. Requires scope: `admin.conversations:write`
+            team_id (string): The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -261,9 +383,16 @@ class SlackApp(APIApplication):
         Tags:
             admin.conversations.restrictAccess, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+            'group_id': group_id,
+            'team_id': team_id,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.restrictAccess.addGroup"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -288,9 +417,15 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def adminconversationsrestrict_access_remove_idp_group(self) -> dict[str, Any]:
+    def adminconversationsrestrict_access_remove_idp_group(self, channel_id, group_id, team_id, token) -> dict[str, Any]:
         """
         Removes an IDP group from a private channel's allowlist using the Slack API, potentially removing members who are only part of this group.
+
+        Args:
+            channel_id (string): The channel to remove the linked group from.
+            group_id (string): The [IDP Group](https://slack.com/help/articles/115001435788-Connect-identity-provider-groups-to-your-Enterprise-Grid-org) ID to remove from the private channel.
+            team_id (string): The workspace where the channel exists. This argument is required for channels only tied to one workspace, and optional for channels that are shared across an organization.
+            token (string): Authentication token. Requires scope: `admin.conversations:write`
 
         Returns:
             dict[str, Any]: Typical success response
@@ -298,9 +433,16 @@ class SlackApp(APIApplication):
         Tags:
             admin.conversations.restrictAccess, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+            'group_id': group_id,
+            'team_id': team_id,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.restrictAccess.removeGroup"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -329,73 +471,118 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def adminconversations_set_conversation_prefs(self) -> dict[str, Any]:
+    def adminconversations_set_conversation_prefs(self, channel_id, prefs) -> dict[str, Any]:
         """
         Sets the posting and threading permissions for a public or private Slack channel using the `admin.conversations.setConversationPrefs` API operation.
 
+        Args:
+            channel_id (string): The channel to set the prefs for
+            prefs (string): The prefs for this channel in a stringified JSON format.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.conversations, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+            'prefs': prefs,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.setConversationPrefs"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminconversations_set_teams_workspace_connection(self) -> dict[str, Any]:
+    def adminconversations_set_teams_workspace_connection(self, channel_id, org_channel=None, target_team_ids=None, team_id=None) -> dict[str, Any]:
         """
         Sets or updates the workspaces connected to a channel in an Enterprise Grid organization, allowing the channel to be configured as a regular or shared channel across specified workspaces.
 
+        Args:
+            channel_id (string): The encoded `channel_id` to add or remove to workspaces.
+            org_channel (boolean): True if channel has to be converted to an org channel
+            target_team_ids (string): A comma-separated list of workspaces to which the channel should be shared. Not required if the channel is being shared org-wide.
+            team_id (string): The workspace to which the channel belongs. Omit this argument if the channel is a cross-workspace shared channel.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.conversations, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+            'org_channel': org_channel,
+            'target_team_ids': target_team_ids,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.setTeams"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminconversations_unarchive_channel(self) -> dict[str, Any]:
+    def adminconversations_unarchive_channel(self, channel_id) -> dict[str, Any]:
         """
         Unarchives a public or private Slack channel using the Slack Admin API with a "POST" request.
 
+        Args:
+            channel_id (string): The channel to unarchive.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.conversations, admin
         """
+        request_body = {
+            'channel_id': channel_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.conversations.unarchive"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminemoji_add_emoji(self) -> dict[str, Any]:
+    def adminemoji_add_emoji(self, name, token, url) -> dict[str, Any]:
         """
         Adds a custom emoji across an Enterprise Grid organization using the Slack Admin API.
 
+        Args:
+            name (string): The name of the emoji to be removed. Colons (`:myemoji:`) around the value are not required, although they may be included.
+            token (string): Authentication token. Requires scope: `admin.teams:write`
+            url (string): The URL of a file to use as an image for the emoji. Square images under 128KB and with transparent backgrounds work best.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.emoji, admin
         """
+        request_body = {
+            'name': name,
+            'token': token,
+            'url': url,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.emoji.add"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminemoji_alias_add(self) -> dict[str, Any]:
+    def adminemoji_alias_add(self, alias_for, name, token) -> dict[str, Any]:
         """
         Adds an alias for an existing emoji across an Enterprise Grid organization using Slack's Admin API, requiring the `admin.teams:write` scope.
+
+        Args:
+            alias_for (string): The alias of the emoji.
+            name (string): The name of the emoji to be aliased. Colons (`:myemoji:`) around the value are not required, although they may be included.
+            token (string): Authentication token. Requires scope: `admin.teams:write`
 
         Returns:
             dict[str, Any]: Typical success response
@@ -403,9 +590,15 @@ class SlackApp(APIApplication):
         Tags:
             admin.emoji, admin
         """
+        request_body = {
+            'alias_for': alias_for,
+            'name': name,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.emoji.addAlias"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -430,41 +623,65 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def adminemoji_remove_enterprise_emoji(self) -> dict[str, Any]:
+    def adminemoji_remove_enterprise_emoji(self, name, token) -> dict[str, Any]:
         """
         Removes a custom emoji from an entire Enterprise Grid organization using the Slack Admin API with required admin authentication.
 
+        Args:
+            name (string): The name of the emoji to be removed. Colons (`:myemoji:`) around the value are not required, although they may be included.
+            token (string): Authentication token. Requires scope: `admin.teams:write`
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.emoji, admin
         """
+        request_body = {
+            'name': name,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.emoji.remove"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminemoji_rename_emoji(self) -> dict[str, Any]:
+    def adminemoji_rename_emoji(self, name, new_name, token) -> dict[str, Any]:
         """
         Renames a custom emoji across an Enterprise Grid organization using the Slack Admin API.
 
+        Args:
+            name (string): The name of the emoji to be renamed. Colons (`:myemoji:`) around the value are not required, although they may be included.
+            new_name (string): The new name of the emoji.
+            token (string): Authentication token. Requires scope: `admin.teams:write`
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.emoji, admin
         """
+        request_body = {
+            'name': name,
+            'new_name': new_name,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.emoji.rename"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def admininvite_requests_approve_request(self) -> dict[str, Any]:
+    def admininvite_requests_approve_request(self, invite_request_id=None, team_id=None) -> dict[str, Any]:
         """
         Approves an invite request using the Slack API, requiring admin authentication.
+
+        Args:
+            invite_request_id (string): ID of the request to invite.
+            team_id (string): ID for the workspace where the invite request was made.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -472,9 +689,14 @@ class SlackApp(APIApplication):
         Tags:
             admin.inviteRequests, admin
         """
+        request_body = {
+            'invite_request_id': invite_request_id,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.inviteRequests.approve"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -520,9 +742,13 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def admininvite_requests_deny_request(self) -> dict[str, Any]:
+    def admininvite_requests_deny_request(self, invite_request_id=None, team_id=None) -> dict[str, Any]:
         """
         Denies an invitation request using the POST method with admin-level access.
+
+        Args:
+            invite_request_id (string): ID of the request to invite.
+            team_id (string): ID for the workspace where the invite request was made.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -530,9 +756,14 @@ class SlackApp(APIApplication):
         Tags:
             admin.inviteRequests, admin
         """
+        request_body = {
+            'invite_request_id': invite_request_id,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.inviteRequests.deny"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -579,9 +810,15 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def adminteams_create_enterprise_team(self) -> dict[str, Any]:
+    def adminteams_create_enterprise_team(self, team_domain, team_name, team_description=None, team_discoverability=None) -> dict[str, Any]:
         """
         Creates a new workspace for an enterprise organization using the Slack Admin API, requiring authentication and specific team details.
+
+        Args:
+            team_domain (string): Team domain (for example, slacksoftballteam).
+            team_name (string): Team name (for example, Slack Softball Team).
+            team_description (string): Description for the team.
+            team_discoverability (string): Who can join the team. A team's discoverability can be `open`, `closed`, `invite_only`, or `unlisted`.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -589,9 +826,16 @@ class SlackApp(APIApplication):
         Tags:
             admin.teams, admin
         """
+        request_body = {
+            'team_description': team_description,
+            'team_discoverability': team_discoverability,
+            'team_domain': team_domain,
+            'team_name': team_name,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.teams.create"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -656,105 +900,170 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def adminteamssettings_set_default_channels(self) -> dict[str, Any]:
+    def adminteamssettings_set_default_channels(self, channel_ids, team_id, token) -> dict[str, Any]:
         """
         Sets the default channels of a Slack workspace using the Slack Admin API, ensuring new members are automatically added to these channels upon joining.
 
+        Args:
+            channel_ids (string): An array of channel IDs.
+            team_id (string): ID for the workspace to set the default channel for.
+            token (string): Authentication token. Requires scope: `admin.teams:write`
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.teams.settings, admin
         """
+        request_body = {
+            'channel_ids': channel_ids,
+            'team_id': team_id,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.teams.settings.setDefaultChannels"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminteamssettings_set_description(self) -> dict[str, Any]:
+    def adminteamssettings_set_description(self, description, team_id) -> dict[str, Any]:
         """
         Sets the description of a specified Slack workspace using the Slack API, requiring an authentication token with the `admin.teams:write` scope.
 
+        Args:
+            description (string): The new description for the workspace.
+            team_id (string): ID for the workspace to set the description for.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.teams.settings, admin
         """
+        request_body = {
+            'description': description,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.teams.settings.setDescription"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminteamssettings_set_discoverability_of_workspace(self) -> dict[str, Any]:
+    def adminteamssettings_set_discoverability_of_workspace(self, discoverability, team_id) -> dict[str, Any]:
         """
         Sets the discoverability of a Slack workspace using the Slack Admin API, allowing admins to control whether a workspace is visible to others within an Enterprise Grid organization.
 
+        Args:
+            discoverability (string): This workspace's discovery setting. It must be set to one of `open`, `invite_only`, `closed`, or `unlisted`.
+            team_id (string): The ID of the workspace to set discoverability on.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.teams.settings, admin
         """
+        request_body = {
+            'discoverability': discoverability,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.teams.settings.setDiscoverability"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminteamssettings_set_icon(self) -> dict[str, Any]:
+    def adminteamssettings_set_icon(self, image_url, team_id, token) -> dict[str, Any]:
         """
         Sets the icon of a Slack workspace using the Slack API and requires the "admin.teams:write" scope, returning a success status message upon completion.
 
+        Args:
+            image_url (string): Image URL for the icon
+            team_id (string): ID for the workspace to set the icon for.
+            token (string): Authentication token. Requires scope: `admin.teams:write`
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.teams.settings, admin
         """
+        request_body = {
+            'image_url': image_url,
+            'team_id': team_id,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.teams.settings.setIcon"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminteamssettings_set_name(self) -> dict[str, Any]:
+    def adminteamssettings_set_name(self, name, team_id) -> dict[str, Any]:
         """
         Sets the name of a specified Enterprise Grid workspace using the Slack Admin API with required authentication and permissions.
 
+        Args:
+            name (string): The new name of the workspace.
+            team_id (string): ID for the workspace to set the name for.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.teams.settings, admin
         """
+        request_body = {
+            'name': name,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.teams.settings.setName"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminusergroups_add_default_channels(self) -> dict[str, Any]:
+    def adminusergroups_add_default_channels(self, channel_ids, usergroup_id, team_id=None) -> dict[str, Any]:
         """
         Adds one or more default channels to an IDP group in an Enterprise Grid workspace using the Slack API.
 
+        Args:
+            channel_ids (string): Comma separated string of channel IDs.
+            usergroup_id (string): ID of the IDP group to add default channels for.
+            team_id (string): The workspace to add default channels in.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.usergroups, admin
         """
+        request_body = {
+            'channel_ids': channel_ids,
+            'team_id': team_id,
+            'usergroup_id': usergroup_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.usergroups.addChannels"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminusergroups_associate_default_workspaces(self) -> dict[str, Any]:
+    def adminusergroups_associate_default_workspaces(self, team_ids, usergroup_id, auto_provision=None) -> dict[str, Any]:
         """
         Adds teams to user groups using the provided request body and returns a status message if successful.
+
+        Args:
+            team_ids (string): A comma separated list of encoded team (workspace) IDs. Each workspace *MUST* belong to the organization associated with the token.
+            usergroup_id (string): An encoded usergroup (IDP Group) ID.
+            auto_provision (boolean): When `true`, this method automatically creates new workspace accounts for the IDP group members.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -762,9 +1071,15 @@ class SlackApp(APIApplication):
         Tags:
             admin.usergroups, admin
         """
+        request_body = {
+            'auto_provision': auto_provision,
+            'team_ids': team_ids,
+            'usergroup_id': usergroup_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.usergroups.addTeams"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -789,9 +1104,13 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def adminusergroups_remove_channels(self) -> dict[str, Any]:
+    def adminusergroups_remove_channels(self, channel_ids, usergroup_id) -> dict[str, Any]:
         """
         Removes one or more default channels from an org-level IDP group (user group) using the Slack API.
+
+        Args:
+            channel_ids (string): Comma-separated string of channel IDs
+            usergroup_id (string): ID of the IDP Group
 
         Returns:
             dict[str, Any]: Typical success response
@@ -799,31 +1118,62 @@ class SlackApp(APIApplication):
         Tags:
             admin.usergroups, admin
         """
+        request_body = {
+            'channel_ids': channel_ids,
+            'usergroup_id': usergroup_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.usergroups.removeChannels"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminusers_add_workspace_user(self) -> dict[str, Any]:
+    def adminusers_add_workspace_user(self, team_id, user_id, channel_ids=None, is_restricted=None, is_ultra_restricted=None) -> dict[str, Any]:
         """
         Assigns or reinstates a user to an Enterprise Grid workspace, adding them as a member or guest as specified, and reactivating their account if previously deactivated.
 
+        Args:
+            team_id (string): The ID (`T1234`) of the workspace.
+            user_id (string): The ID of the user to add to the workspace.
+            channel_ids (string): Comma separated values of channel IDs to add user in the new workspace.
+            is_restricted (boolean): True if user should be added to the workspace as a guest.
+            is_ultra_restricted (boolean): True if user should be added to the workspace as a single-channel guest.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.users, admin
         """
+        request_body = {
+            'channel_ids': channel_ids,
+            'is_restricted': is_restricted,
+            'is_ultra_restricted': is_ultra_restricted,
+            'team_id': team_id,
+            'user_id': user_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.users.assign"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminusers_invite_user_to_workspace(self) -> dict[str, Any]:
+    def adminusers_invite_user_to_workspace(self, channel_ids, email, team_id, custom_message=None, guest_expiration_ts=None, is_restricted=None, is_ultra_restricted=None, real_name=None, resend=None) -> dict[str, Any]:
         """
         Invites a user to a Slack workspace using the Slack API and requires an authentication token with the necessary scopes.
+
+        Args:
+            channel_ids (string): A comma-separated list of `channel_id`s for this user to join. At least one channel is required.
+            email (string): The email address of the person to invite.
+            team_id (string): The ID (`T1234`) of the workspace.
+            custom_message (string): An optional message to send to the user in the invite email.
+            guest_expiration_ts (string): Timestamp when guest account should be disabled. Only include this timestamp if you are inviting a guest user and you want their account to expire on a certain date.
+            is_restricted (boolean): Is this user a multi-channel guest user? (default: false)
+            is_ultra_restricted (boolean): Is this user a single channel guest user? (default: false)
+            real_name (string): Full name of the user.
+            resend (boolean): Allow this invite to be resent in the future if a user has not signed up yet. (default: false)
 
         Returns:
             dict[str, Any]: Typical success response
@@ -831,9 +1181,21 @@ class SlackApp(APIApplication):
         Tags:
             admin.users, admin
         """
+        request_body = {
+            'channel_ids': channel_ids,
+            'custom_message': custom_message,
+            'email': email,
+            'guest_expiration_ts': guest_expiration_ts,
+            'is_restricted': is_restricted,
+            'is_ultra_restricted': is_ultra_restricted,
+            'real_name': real_name,
+            'resend': resend,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.users.invite"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -858,105 +1220,167 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def adminusers_remove_user_from_workspace(self) -> dict[str, Any]:
+    def adminusers_remove_user_from_workspace(self, team_id, user_id) -> dict[str, Any]:
         """
         Removes a user from a Slack workspace using the Slack API and returns a status message, requiring a valid authentication token with the "admin.users:write" scope.
 
+        Args:
+            team_id (string): The ID (`T1234`) of the workspace.
+            user_id (string): The ID of the user to remove.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.users, admin
         """
+        request_body = {
+            'team_id': team_id,
+            'user_id': user_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.users.remove"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminuserssession_invalidate_session(self) -> dict[str, Any]:
+    def adminuserssession_invalidate_session(self, session_id, team_id) -> dict[str, Any]:
         """
         Invalidates a single user session on a Slack workspace, logging the user out of that session while leaving other active sessions unaffected.
 
+        Args:
+            session_id (integer): session_id
+            team_id (string): ID of the team that the session belongs to
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.users.session, admin
         """
+        request_body = {
+            'session_id': session_id,
+            'team_id': team_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.users.session.invalidate"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminuserssession_reset_sessions(self) -> dict[str, Any]:
+    def adminuserssession_reset_sessions(self, user_id, mobile_only=None, web_only=None) -> dict[str, Any]:
         """
         Resets all active sessions for a specified user in an Enterprise Grid workspace, unauthenticating the user and causing their Slack clients to clear local caches.
 
+        Args:
+            user_id (string): The ID of the user to wipe sessions for
+            mobile_only (boolean): Only expire mobile sessions (default: false)
+            web_only (boolean): Only expire web sessions (default: false)
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.users.session, admin
         """
+        request_body = {
+            'mobile_only': mobile_only,
+            'user_id': user_id,
+            'web_only': web_only,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.users.session.reset"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminusers_set_admin_user(self) -> dict[str, Any]:
+    def adminusers_set_admin_user(self, team_id, user_id) -> dict[str, Any]:
         """
         Promotes an existing user to a workspace administrator role using the Slack API and requires the "admin.users:write" permission scope.
 
+        Args:
+            team_id (string): The ID (`T1234`) of the workspace.
+            user_id (string): The ID of the user to designate as an admin.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.users, admin
         """
+        request_body = {
+            'team_id': team_id,
+            'user_id': user_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.users.setAdmin"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminusers_set_expiration_guest(self) -> dict[str, Any]:
+    def adminusers_set_expiration_guest(self, expiration_ts, team_id, user_id) -> dict[str, Any]:
         """
         Sets an expiration for a guest user in a Slack workspace using the Slack Admin API, requiring an authentication token and details such as expiration timestamp, team ID, and user ID.
 
+        Args:
+            expiration_ts (integer): Timestamp when guest account should be disabled.
+            team_id (string): The ID (`T1234`) of the workspace.
+            user_id (string): The ID of the user to set an expiration for.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.users, admin
         """
+        request_body = {
+            'expiration_ts': expiration_ts,
+            'team_id': team_id,
+            'user_id': user_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.users.setExpiration"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminusers_set_workspace_owner(self) -> dict[str, Any]:
+    def adminusers_set_workspace_owner(self, team_id, user_id) -> dict[str, Any]:
         """
         Sets an existing regular user or admin as a workspace owner in an Enterprise Grid workspace using the Slack API.
 
+        Args:
+            team_id (string): The ID (`T1234`) of the workspace.
+            user_id (string): Id of the user to promote to owner.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             admin.users, admin
         """
+        request_body = {
+            'team_id': team_id,
+            'user_id': user_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.users.setOwner"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def adminusers_set_regular_user(self) -> dict[str, Any]:
+    def adminusers_set_regular_user(self, team_id, user_id) -> dict[str, Any]:
         """
         Converts an existing guest user, admin user, or owner in an Enterprise Grid workspace to a regular user.
+
+        Args:
+            team_id (string): The ID (`T1234`) of the workspace.
+            user_id (string): The ID of the user to designate as a regular user.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -964,9 +1388,14 @@ class SlackApp(APIApplication):
         Tags:
             admin.users, admin
         """
+        request_body = {
+            'team_id': team_id,
+            'user_id': user_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/admin.users.setRegular"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -1211,25 +1640,50 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def calls_add(self) -> dict[str, Any]:
+    def calls_add(self, external_unique_id, join_url, title=None, created_by=None, date_start=None, desktop_app_join_url=None, external_display_id=None, users=None) -> dict[str, Any]:
         """
         Registers a new Call in Slack by submitting call details via a POST request with authentication.
 
+        Args:
+            external_unique_id (string): An ID supplied by the 3rd-party Call provider. It must be unique across all Calls from that service.
+            join_url (string): The URL required for a client to join the Call.
+            title (string): The name of the Call.
+            created_by (string): The valid Slack user ID of the user who created this Call. When this method is called with a user token, the `created_by` field is optional and defaults to the authed user of the token. Otherwise, the field is required.
+            date_start (integer): Call start time in UTC UNIX timestamp format
+            desktop_app_join_url (string): When supplied, available Slack clients will attempt to directly launch the 3rd-party Call with this URL.
+            external_display_id (string): An optional, human-readable ID supplied by the 3rd-party Call provider. If supplied, this ID will be displayed in the Call object.
+            users (string): The list of users to register as participants in the Call. [Read more on how to specify users here](https://slack.dev).
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             calls
         """
+        request_body = {
+            'title': title,
+            'created_by': created_by,
+            'date_start': date_start,
+            'desktop_app_join_url': desktop_app_join_url,
+            'external_display_id': external_display_id,
+            'external_unique_id': external_unique_id,
+            'join_url': join_url,
+            'users': users,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/calls.add"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def calls_end(self) -> dict[str, Any]:
+    def calls_end(self, id, duration=None) -> dict[str, Any]:
         """
         Ends an active Slack call by sending a POST request to the "/calls.end" endpoint, requiring a valid authentication token and the call ID returned from the "calls.add" method.
+
+        Args:
+            id (string): `id` returned when registering the call using the [`calls.add`](https://slack.dev) method.
+            duration (integer): Call duration in seconds
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1237,9 +1691,14 @@ class SlackApp(APIApplication):
         Tags:
             calls
         """
+        request_body = {
+            'duration': duration,
+            'id': id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/calls.end"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -1262,41 +1721,65 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def callsparticipants_add_new_participant(self) -> dict[str, Any]:
+    def callsparticipants_add_new_participant(self, id, users) -> dict[str, Any]:
         """
         Adds participants to a call using the Slack API, requiring a Slack authentication token and form data.
 
+        Args:
+            id (string): `id` returned by the [`calls.add`](https://slack.dev) method.
+            users (string): The list of users to add as participants in the Call. [Read more on how to specify users here](https://slack.dev).
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             calls.participants, calls
         """
+        request_body = {
+            'id': id,
+            'users': users,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/calls.participants.add"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def callsparticipants_register_removed(self) -> dict[str, Any]:
+    def callsparticipants_register_removed(self, id, users) -> dict[str, Any]:
         """
         Removes a participant from an active call using a POST request with required authentication.
 
+        Args:
+            id (string): `id` returned by the [`calls.add`](https://slack.dev) method.
+            users (string): The list of users to remove as participants in the Call. [Read more on how to specify users here](https://slack.dev).
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             calls.participants, calls
         """
+        request_body = {
+            'id': id,
+            'users': users,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/calls.participants.remove"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def calls_update(self) -> dict[str, Any]:
+    def calls_update(self, id, title=None, desktop_app_join_url=None, join_url=None) -> dict[str, Any]:
         """
         Updates a call using the provided form data and returns a successful response if the operation is completed.
+
+        Args:
+            id (string): `id` returned by the [`calls.add`](https://slack.dev) method.
+            title (string): The name of the Call.
+            desktop_app_join_url (string): When supplied, available Slack clients will attempt to directly launch the 3rd-party Call with this URL.
+            join_url (string): The URL required for a client to join the Call.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1304,31 +1787,54 @@ class SlackApp(APIApplication):
         Tags:
             calls
         """
+        request_body = {
+            'title': title,
+            'desktop_app_join_url': desktop_app_join_url,
+            'id': id,
+            'join_url': join_url,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/calls.update"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def chat_delete(self) -> dict[str, Any]:
+    def chat_delete(self, as_user=None, channel=None, ts=None) -> dict[str, Any]:
         """
         Deletes a message from a conversation in Slack using the provided channel and message timestamp, requiring appropriate user or bot authentication.
 
+        Args:
+            as_user (boolean): Pass true to delete the message as the authed user with `chat:write:user` scope. [Bot users](https://slack.dev) in this context are considered authed users. If unused or false, the message will be deleted with `chat:write:bot` scope.
+            channel (string): Channel containing the message to be deleted.
+            ts (number): Timestamp of the message to be deleted.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             chat
         """
+        request_body = {
+            'as_user': as_user,
+            'channel': channel,
+            'ts': ts,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/chat.delete"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def chat_delete_scheduled_message(self) -> dict[str, Any]:
+    def chat_delete_scheduled_message(self, as_user=None, channel=None, scheduled_message_id=None) -> dict[str, Any]:
         """
         Deletes a pending scheduled Slack message before it is sent using the Slack API, requiring a valid authentication token and either the `chat:write:user` or `chat:write:bot` scope.
+
+        Args:
+            as_user (boolean): Pass true to delete the message as the authed user with `chat:write:user` scope. [Bot users](https://slack.dev) in this context are considered authed users. If unused or false, the message will be deleted with `chat:write:bot` scope.
+            channel (string): The channel the scheduled_message is posting to
+            scheduled_message_id (string): `scheduled_message_id` returned from call to chat.scheduleMessage
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1336,9 +1842,15 @@ class SlackApp(APIApplication):
         Tags:
             chat
         """
+        request_body = {
+            'as_user': as_user,
+            'channel': channel,
+            'scheduled_message_id': scheduled_message_id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/chat.deleteScheduledMessage"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -1363,57 +1875,144 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def chat_me_message(self) -> dict[str, Any]:
+    def chat_me_message(self, channel=None, text=None) -> dict[str, Any]:
         """
         Sends a "me" message to a specified Slack channel using the Slack API, allowing users to express themselves in a personalized way.
 
+        Args:
+            channel (string): Channel to send message to. Can be a public channel, private group or IM channel. Can be an encoded ID, or a name.
+            text (string): Text of the message to send.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             chat
         """
+        request_body = {
+            'channel': channel,
+            'text': text,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/chat.meMessage"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def chat_post_ephemeral(self) -> dict[str, Any]:
+    def chat_post_ephemeral(self, as_user=None, attachments=None, blocks=None, channel=None, icon_emoji=None, icon_url=None, link_names=None, parse=None, text=None, thread_ts=None, user=None, username=None) -> dict[str, Any]:
         """
         Posts an ephemeral message visible only to a specified user within a channel or conversation, using authentication and content parameters to deliver context-sensitive, non-persistent notifications.
 
+        Args:
+            as_user (boolean): Pass true to post the message as the authed user. Defaults to true if the chat:write:bot scope is not included. Otherwise, defaults to false.
+            attachments (string): A JSON-based array of structured attachments, presented as a URL-encoded string.
+            blocks (string): A JSON-based array of structured blocks, presented as a URL-encoded string.
+            channel (string): Channel, private group, or IM channel to send message to. Can be an encoded ID, or a name.
+            icon_emoji (string): Emoji to use as the icon for this message. Overrides `icon_url`. Must be used in conjunction with `as_user` set to `false`, otherwise ignored. See [authorship](https://slack.dev) below.
+            icon_url (string): URL to an image to use as the icon for this message. Must be used in conjunction with `as_user` set to false, otherwise ignored. See [authorship](https://slack.dev) below.
+            link_names (boolean): Find and link channel names and usernames.
+            parse (string): Change how messages are treated. Defaults to `none`. See [below](https://slack.dev).
+            text (string): How this field works and whether it is required depends on other fields you use in your API call. [See below](https://slack.dev) for more detail.
+            thread_ts (string): Provide another message's `ts` value to post this message in a thread. Avoid using a reply's `ts` value; use its parent's value instead. Ephemeral messages in threads are only shown if there is already an active thread.
+            user (string): `id` of the user who will receive the ephemeral message. The user should be in the channel specified by the `channel` argument.
+            username (string): Set your bot's user name. Must be used in conjunction with `as_user` set to false, otherwise ignored. See [authorship](https://slack.dev) below.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             chat
         """
+        request_body = {
+            'as_user': as_user,
+            'attachments': attachments,
+            'blocks': blocks,
+            'channel': channel,
+            'icon_emoji': icon_emoji,
+            'icon_url': icon_url,
+            'link_names': link_names,
+            'parse': parse,
+            'text': text,
+            'thread_ts': thread_ts,
+            'user': user,
+            'username': username,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/chat.postEphemeral"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def chat_post_message(self) -> dict[str, Any]:
+    def chat_post_message(self, as_user=None, attachments=None, blocks=None, channel=None, icon_emoji=None, icon_url=None, link_names=None, mrkdwn=None, parse=None, reply_broadcast=None, text=None, thread_ts=None, unfurl_links=None, unfurl_media=None, username=None) -> dict[str, Any]:
         """
         Sends a message to a Slack channel using the `chat.postMessage` method, requiring a valid Slack authentication token and supporting various message formats such as text, attachments, and blocks.
 
+        Args:
+            as_user (boolean): Pass true to post the message as the authed user, instead of as a bot. Defaults to false. See [authorship](https://slack.dev) below.
+            attachments (string): A JSON-based array of structured attachments, presented as a URL-encoded string.
+            blocks (string): A JSON-based array of structured blocks, presented as a URL-encoded string.
+            channel (string): Channel, private group, or IM channel to send message to. Can be an encoded ID, or a name. See [below](https://slack.dev) for more details.
+            icon_emoji (string): Emoji to use as the icon for this message. Overrides `icon_url`. Must be used in conjunction with `as_user` set to `false`, otherwise ignored. See [authorship](https://slack.dev) below.
+            icon_url (string): URL to an image to use as the icon for this message. Must be used in conjunction with `as_user` set to false, otherwise ignored. See [authorship](https://slack.dev) below.
+            link_names (boolean): Find and link channel names and usernames.
+            mrkdwn (boolean): Disable Slack markup parsing by setting to `false`. Enabled by default.
+            parse (string): Change how messages are treated. Defaults to `none`. See [below](https://slack.dev).
+            reply_broadcast (boolean): Used in conjunction with `thread_ts` and indicates whether reply should be made visible to everyone in the channel or conversation. Defaults to `false`.
+            text (string): How this field works and whether it is required depends on other fields you use in your API call. [See below](https://slack.dev) for more detail.
+            thread_ts (string): Provide another message's `ts` value to make this message a reply. Avoid using a reply's `ts` value; use its parent instead.
+            unfurl_links (boolean): Pass true to enable unfurling of primarily text-based content.
+            unfurl_media (boolean): Pass false to disable unfurling of media content.
+            username (string): Set your bot's user name. Must be used in conjunction with `as_user` set to false, otherwise ignored. See [authorship](https://slack.dev) below.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             chat
         """
+        request_body = {
+            'as_user': as_user,
+            'attachments': attachments,
+            'blocks': blocks,
+            'channel': channel,
+            'icon_emoji': icon_emoji,
+            'icon_url': icon_url,
+            'link_names': link_names,
+            'mrkdwn': mrkdwn,
+            'parse': parse,
+            'reply_broadcast': reply_broadcast,
+            'text': text,
+            'thread_ts': thread_ts,
+            'unfurl_links': unfurl_links,
+            'unfurl_media': unfurl_media,
+            'username': username,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/chat.postMessage"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def chat_schedule_message(self) -> dict[str, Any]:
+    def chat_schedule_message(self, as_user=None, attachments=None, blocks=None, channel=None, link_names=None, parse=None, post_at=None, reply_broadcast=None, text=None, thread_ts=None, unfurl_links=None, unfurl_media=None) -> dict[str, Any]:
         """
         Schedules a message to be sent to a public channel, private channel, or direct message conversation in Slack at a specified future time, supporting text, blocks, and attachments.
+
+        Args:
+            as_user (boolean): Pass true to post the message as the authed user, instead of as a bot. Defaults to false. See [chat.postMessage](chat.postMessage#authorship).
+            attachments (string): A JSON-based array of structured attachments, presented as a URL-encoded string.
+            blocks (string): A JSON-based array of structured blocks, presented as a URL-encoded string.
+            channel (string): Channel, private group, or DM channel to send message to. Can be an encoded ID, or a name. See [below](https://slack.dev) for more details.
+            link_names (boolean): Find and link channel names and usernames.
+            parse (string): Change how messages are treated. Defaults to `none`. See [chat.postMessage](chat.postMessage#formatting).
+            post_at (string): Unix EPOCH timestamp of time in future to send the message.
+            reply_broadcast (boolean): Used in conjunction with `thread_ts` and indicates whether reply should be made visible to everyone in the channel or conversation. Defaults to `false`.
+            text (string): How this field works and whether it is required depends on other fields you use in your API call. [See below](https://slack.dev) for more detail.
+            thread_ts (number): Provide another message's `ts` value to make this message a reply. Avoid using a reply's `ts` value; use its parent instead.
+            unfurl_links (boolean): Pass true to enable unfurling of primarily text-based content.
+            unfurl_media (boolean): Pass false to disable unfurling of media content.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1421,9 +2020,24 @@ class SlackApp(APIApplication):
         Tags:
             chat
         """
+        request_body = {
+            'as_user': as_user,
+            'attachments': attachments,
+            'blocks': blocks,
+            'channel': channel,
+            'link_names': link_names,
+            'parse': parse,
+            'post_at': post_at,
+            'reply_broadcast': reply_broadcast,
+            'text': text,
+            'thread_ts': thread_ts,
+            'unfurl_links': unfurl_links,
+            'unfurl_media': unfurl_media,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/chat.scheduleMessage"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -1450,9 +2064,17 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def chat_unfurl(self) -> dict[str, Any]:
+    def chat_unfurl(self, channel, ts, unfurls=None, user_auth_message=None, user_auth_required=None, user_auth_url=None) -> dict[str, Any]:
         """
         Unfurls a link in a Slack message, allowing custom formatting and display of user-posted URLs, using the Slack API's `chat.unfurl` method.
+
+        Args:
+            channel (string): Channel ID of the message
+            ts (string): Timestamp of the message to add unfurl behavior to.
+            unfurls (string): URL-encoded JSON map with keys set to URLs featured in the the message, pointing to their unfurl blocks or message attachments.
+            user_auth_message (string): Provide a simply-formatted string to send as an ephemeral message to the user as invitation to authenticate further and enable full unfurling behavior
+            user_auth_required (boolean): Set to `true` or `1` to indicate the user must install your Slack app to trigger unfurls for this domain
+            user_auth_url (string): Send users to this custom URL where they will complete authentication in your app to fully trigger unfurling. Value should be properly URL-encoded.
 
         Returns:
             dict[str, Any]: Typical, minimal success response
@@ -1460,15 +2082,34 @@ class SlackApp(APIApplication):
         Tags:
             chat
         """
+        request_body = {
+            'channel': channel,
+            'ts': ts,
+            'unfurls': unfurls,
+            'user_auth_message': user_auth_message,
+            'user_auth_required': user_auth_required,
+            'user_auth_url': user_auth_url,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/chat.unfurl"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def chat_update(self) -> dict[str, Any]:
+    def chat_update(self, as_user=None, attachments=None, blocks=None, channel=None, link_names=None, parse=None, text=None, ts=None) -> dict[str, Any]:
         """
         Updates an existing message in a Slack channel using specified text, attachments, or blocks with required authentication.
+
+        Args:
+            as_user (string): Pass true to update the message as the authed user. [Bot users](https://slack.dev) in this context are considered authed users.
+            attachments (string): A JSON-based array of structured attachments, presented as a URL-encoded string. This field is required when not presenting `text`. If you don't include this field, the message's previous `attachments` will be retained. To remove previous `attachments`, include an empty array for this field.
+            blocks (string): A JSON-based array of [structured blocks](https://slack.dev), presented as a URL-encoded string. If you don't include this field, the message's previous `blocks` will be retained. To remove previous `blocks`, include an empty array for this field.
+            channel (string): Channel containing the message to be updated.
+            link_names (string): Find and link channel names and usernames. Defaults to `none`. If you do not specify a value for this field, the original value set for the message will be overwritten with the default, `none`.
+            parse (string): Change how messages are treated. Defaults to `client`, unlike `chat.postMessage`. Accepts either `none` or `full`. If you do not specify a value for this field, the original value set for the message will be overwritten with the default, `client`.
+            text (string): New text for the message, using the [default formatting rules](https://slack.dev). It's not required when presenting `blocks` or `attachments`.
+            ts (string): Timestamp of the message to be updated.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1476,47 +2117,76 @@ class SlackApp(APIApplication):
         Tags:
             chat
         """
+        request_body = {
+            'as_user': as_user,
+            'attachments': attachments,
+            'blocks': blocks,
+            'channel': channel,
+            'link_names': link_names,
+            'parse': parse,
+            'text': text,
+            'ts': ts,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/chat.update"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def conversations_archive(self) -> dict[str, Any]:
+    def conversations_archive(self, channel=None) -> dict[str, Any]:
         """
         Archives a Slack conversation using the specified authentication token and required scopes for the channel type.
 
+        Args:
+            channel (string): ID of conversation to archive
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.archive"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def conversations_close(self) -> dict[str, Any]:
+    def conversations_close(self, channel=None) -> dict[str, Any]:
         """
         Closes a direct message or multi-person direct message in Slack using the Slack API and returns a status message.
 
+        Args:
+            channel (string): Conversation to close.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.close"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def conversations_create(self) -> dict[str, Any]:
+    def conversations_create(self, is_private=None, name=None) -> dict[str, Any]:
         """
         Creates a new public or private channel in a Slack workspace using the Conversations API.
+
+        Args:
+            is_private (boolean): Create a private channel instead of a public one
+            name (string): Name of the public or private channel to create
 
         Returns:
             dict[str, Any]: If successful, the command returns a rather stark [conversation object](https://slack.dev)
@@ -1524,9 +2194,14 @@ class SlackApp(APIApplication):
         Tags:
             conversations
         """
+        request_body = {
+            'is_private': is_private,
+            'name': name,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.create"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -1577,9 +2252,13 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def conversations_invite(self) -> dict[str, Any]:
+    def conversations_invite(self, channel=None, users=None) -> dict[str, Any]:
         """
         Invites up to 1000 users to a public or private Slack channel using the Slack API and requires a valid authentication token.
+
+        Args:
+            channel (string): The ID of the public or private channel to invite user(s) to.
+            users (string): A comma separated list of user IDs. Up to 1000 users may be listed.
 
         Returns:
             dict[str, Any]: Typical success response when an invitation is extended
@@ -1587,47 +2266,71 @@ class SlackApp(APIApplication):
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+            'users': users,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.invite"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def conversations_join(self) -> dict[str, Any]:
+    def conversations_join(self, channel=None) -> dict[str, Any]:
         """
         Joins a user to an existing Slack conversation using the Conversations API and returns a conversation object if successful.
 
+        Args:
+            channel (string): ID of conversation to join
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.join"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def conversations_kick(self) -> dict[str, Any]:
+    def conversations_kick(self, channel=None, user=None) -> dict[str, Any]:
         """
         Removes a user from a Slack channel using the Slack API.
 
+        Args:
+            channel (string): ID of conversation to remove user from.
+            user (string): User ID to be removed.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+            'user': user,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.kick"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def conversations_leave(self) -> dict[str, Any]:
+    def conversations_leave(self, channel=None) -> dict[str, Any]:
         """
         Removes the calling user from a Slack conversation using the provided authentication token.
+
+        Args:
+            channel (string): Conversation to leave
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1635,9 +2338,13 @@ class SlackApp(APIApplication):
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.leave"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -1664,9 +2371,13 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def conversations_mark(self) -> dict[str, Any]:
+    def conversations_mark(self, channel=None, ts=None) -> dict[str, Any]:
         """
         Moves the read cursor in a specified Slack conversation for the authenticated user, marking a given position as read and broadcasting this update to their active connections.
+
+        Args:
+            channel (string): Channel or conversation to set the read cursor for.
+            ts (number): Unique identifier of message you want marked as most recently seen in this conversation.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1674,9 +2385,14 @@ class SlackApp(APIApplication):
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+            'ts': ts,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.mark"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -1702,25 +2418,40 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def conversations_open(self) -> dict[str, Any]:
+    def conversations_open(self, channel=None, return_im=None, users=None) -> dict[str, Any]:
         """
         Opens or resumes a direct message or multi-person direct message using the Slack API, allowing subsequent message sending to the conversation.
 
+        Args:
+            channel (string): Resume a conversation by supplying an `im` or `mpim`'s ID. Or provide the `users` field instead.
+            return_im (boolean): Boolean, indicates you want the full IM channel definition in the response.
+            users (string): Comma separated lists of users. If only one user is included, this creates a 1:1 DM.  The ordering of the users is preserved whenever a multi-person direct message is returned. Supply a `channel` when not supplying `users`.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+            'return_im': return_im,
+            'users': users,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.open"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def conversations_rename(self) -> dict[str, Any]:
+    def conversations_rename(self, channel=None, name=None) -> dict[str, Any]:
         """
         Renames a conversation in Slack, allowing only the original creator, Workspace Admin, or Channel Manager to change its name within specified naming rules.
+
+        Args:
+            channel (string): ID of conversation to rename
+            name (string): New name for conversation.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1728,9 +2459,14 @@ class SlackApp(APIApplication):
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+            'name': name,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.rename"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -1760,41 +2496,62 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def conversations_set_purpose(self) -> dict[str, Any]:
+    def conversations_set_purpose(self, channel=None, purpose=None) -> dict[str, Any]:
         """
         Updates the purpose (description) of a Slack conversation using the "POST" method, requiring a valid token with appropriate scopes.
 
+        Args:
+            channel (string): Conversation to set the purpose of
+            purpose (string): A new, specialer purpose
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+            'purpose': purpose,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.setPurpose"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def conversations_set_topic(self) -> dict[str, Any]:
+    def conversations_set_topic(self, channel=None, topic=None) -> dict[str, Any]:
         """
         Sets the topic for a Slack conversation using the Slack API and returns a success message when the operation is completed.
 
+        Args:
+            channel (string): Conversation to set the topic of
+            topic (string): The new topic string. Does not support formatting or linkification.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+            'topic': topic,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.setTopic"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def conversations_unarchive(self) -> dict[str, Any]:
+    def conversations_unarchive(self, channel=None) -> dict[str, Any]:
         """
         Reverses the archival of a Slack conversation, adding the calling user to the conversation, using a user token with write permissions.
+
+        Args:
+            channel (string): ID of conversation to unarchive
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1802,9 +2559,13 @@ class SlackApp(APIApplication):
         Tags:
             conversations
         """
+        request_body = {
+            'channel': channel,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/conversations.unarchive"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -1842,7 +2603,7 @@ class SlackApp(APIApplication):
         """
         url = f"{self.base_url}/dnd.endDnd"
         query_params = {}
-        response = self._post(url, data={}, params=query_params)
+        response = self._post(url, data={}, params=query_params, content_type='application/json')
         response.raise_for_status()
         return response.json()
 
@@ -1858,7 +2619,7 @@ class SlackApp(APIApplication):
         """
         url = f"{self.base_url}/dnd.endSnooze"
         query_params = {}
-        response = self._post(url, data={}, params=query_params)
+        response = self._post(url, data={}, params=query_params, content_type='application/json')
         response.raise_for_status()
         return response.json()
 
@@ -1882,9 +2643,13 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def dnd_set_snooze(self) -> dict[str, Any]:
+    def dnd_set_snooze(self, num_minutes, token) -> dict[str, Any]:
         """
         Activates or adjusts the duration of a user's Do Not Disturb mode on Slack using the "POST" method, requiring a valid authentication token with the "dnd:write" scope.
+
+        Args:
+            num_minutes (string): Number of minutes, from now, to snooze until.
+            token (string): Authentication token. Requires scope: `dnd:write`
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1892,9 +2657,14 @@ class SlackApp(APIApplication):
         Tags:
             dnd
         """
+        request_body = {
+            'num_minutes': num_minutes,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/dnd.setSnooze"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -1937,9 +2707,13 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def filescomments_delete_comment(self) -> dict[str, Any]:
+    def filescomments_delete_comment(self, file=None, id=None) -> dict[str, Any]:
         """
         Deletes an existing comment on a file using the Slack API, accessible only to the comment's original author or a Team Administrator.
+
+        Args:
+            file (string): File to delete a comment from.
+            id (string): The comment to delete.
 
         Returns:
             dict[str, Any]: Standard success response is very simple
@@ -1947,15 +2721,23 @@ class SlackApp(APIApplication):
         Tags:
             files.comments, files
         """
+        request_body = {
+            'file': file,
+            'id': id,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/files.comments.delete"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def files_delete(self) -> dict[str, Any]:
+    def files_delete(self, file=None) -> dict[str, Any]:
         """
         Deletes a specified file from the Slack workspace using a POST request with authentication.
+
+        Args:
+            file (string): ID of file to delete.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -1963,9 +2745,13 @@ class SlackApp(APIApplication):
         Tags:
             files
         """
+        request_body = {
+            'file': file,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/files.delete"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2020,9 +2806,18 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def filesremote_add_from_remote(self) -> dict[str, Any]:
+    def filesremote_add_from_remote(self, title=None, external_id=None, external_url=None, filetype=None, indexable_file_contents=None, preview_image=None, token=None) -> dict[str, Any]:
         """
         Adds a remote file to Slack, making Slack aware of the file without sharing it to a channel.
+
+        Args:
+            title (string): Title of the file being shared.
+            external_id (string): Creator defined GUID for the file.
+            external_url (string): URL of the remote file.
+            filetype (string): type of file
+            indexable_file_contents (string): A text file (txt, pdf, doc, etc.) containing textual search terms that are used to improve discovery of the remote file.
+            preview_image (string): Preview of the document via `multipart/form-data`.
+            token (string): Authentication token. Requires scope: `remote_files:write`
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2030,9 +2825,19 @@ class SlackApp(APIApplication):
         Tags:
             files.remote, files
         """
+        request_body = {
+            'title': title,
+            'external_id': external_id,
+            'external_url': external_url,
+            'filetype': filetype,
+            'indexable_file_contents': indexable_file_contents,
+            'preview_image': preview_image,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/files.remote.add"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2081,9 +2886,14 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def filesremote_delete_file(self) -> dict[str, Any]:
+    def filesremote_delete_file(self, external_id=None, file=None, token=None) -> dict[str, Any]:
         """
         Removes a remote file using a POST request, authorized with Slack authentication and returning a response upon successful deletion.
+
+        Args:
+            external_id (string): Creator defined GUID for the file.
+            file (string): Specify a file by providing its ID.
+            token (string): Authentication token. Requires scope: `remote_files:write`
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2091,9 +2901,15 @@ class SlackApp(APIApplication):
         Tags:
             files.remote, files
         """
+        request_body = {
+            'external_id': external_id,
+            'file': file,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/files.remote.remove"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2119,9 +2935,19 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def filesremote_update_remote_file(self) -> dict[str, Any]:
+    def filesremote_update_remote_file(self, title=None, external_id=None, external_url=None, file=None, filetype=None, indexable_file_contents=None, preview_image=None, token=None) -> dict[str, Any]:
         """
         Updates a remote file in Slack using the `POST` method, allowing changes to fields like title, but not `external_id` or `file_id`, and requires the `remote_files:write` scope for authentication.
+
+        Args:
+            title (string): Title of the file being shared.
+            external_id (string): Creator defined GUID for the file.
+            external_url (string): URL of the remote file.
+            file (string): Specify a file by providing its ID.
+            filetype (string): type of file
+            indexable_file_contents (string): File containing contents that can be used to improve searchability for the remote file.
+            preview_image (string): Preview of the document via `multipart/form-data`.
+            token (string): Authentication token. Requires scope: `remote_files:write`
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2129,47 +2955,83 @@ class SlackApp(APIApplication):
         Tags:
             files.remote, files
         """
+        request_body = {
+            'title': title,
+            'external_id': external_id,
+            'external_url': external_url,
+            'file': file,
+            'filetype': filetype,
+            'indexable_file_contents': indexable_file_contents,
+            'preview_image': preview_image,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/files.remote.update"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def files_revoke_public_url(self) -> dict[str, Any]:
+    def files_revoke_public_url(self, file=None) -> dict[str, Any]:
         """
         Revoke the public URL of a file using the POST method, requiring a Slack authentication token with "files:write:user" scope in the header.
 
+        Args:
+            file (string): File to revoke
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             files
         """
+        request_body = {
+            'file': file,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/files.revokePublicURL"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def files_shared_public_url(self) -> dict[str, Any]:
+    def files_shared_public_url(self, file=None) -> dict[str, Any]:
         """
         Enables public or external sharing for a Slack file using the Slack API and returns a file object with a public permalink.
 
+        Args:
+            file (string): File to share
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             files
         """
+        request_body = {
+            'file': file,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/files.sharedPublicURL"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def files_upload(self) -> dict[str, Any]:
+    def files_upload(self, title=None, channels=None, content=None, file=None, filename=None, filetype=None, initial_comment=None, thread_ts=None, token=None) -> dict[str, Any]:
         """
         Uploads or creates a file to Slack, allowing the file to be shared in specified channels using the POST method with application/x-www-form-urlencoded content.
+
+        Args:
+            title (string): Title of file.
+            channels (string): Comma-separated list of channel names or IDs where the file will be shared.
+            content (string): File contents via a POST variable. If omitting this parameter, you must provide a `file`.
+            file (string): File contents via `multipart/form-data`. If omitting this parameter, you must submit `content`.
+            filename (string): Filename of file.
+            filetype (string): A [file type](https://slack.dev) identifier.
+            initial_comment (string): The message text introducing the file in specified `channels`.
+            thread_ts (number): Provide another message's `ts` value to upload this file as a reply. Never use a reply's `ts` value; use its parent instead.
+            token (string): Authentication token. Requires scope: `files:write:user`
 
         Returns:
             dict[str, Any]: Success response after uploading a file to a channel with an initial message
@@ -2177,9 +3039,21 @@ class SlackApp(APIApplication):
         Tags:
             files
         """
+        request_body = {
+            'title': title,
+            'channels': channels,
+            'content': content,
+            'file': file,
+            'filename': filename,
+            'filetype': filetype,
+            'initial_comment': initial_comment,
+            'thread_ts': thread_ts,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/files.upload"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2273,9 +3147,13 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def pins_add(self) -> dict[str, Any]:
+    def pins_add(self, channel, timestamp=None) -> dict[str, Any]:
         """
         Pins a message to a specified Slack channel using the message's timestamp and channel ID, requiring authentication with a token having the "pins:write" scope.
+
+        Args:
+            channel (string): Channel to pin the item in.
+            timestamp (string): Timestamp of the message to pin.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2283,9 +3161,14 @@ class SlackApp(APIApplication):
         Tags:
             pins
         """
+        request_body = {
+            'channel': channel,
+            'timestamp': timestamp,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/pins.add"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2309,9 +3192,13 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def pins_remove(self) -> dict[str, Any]:
+    def pins_remove(self, channel, timestamp=None) -> dict[str, Any]:
         """
         Un-pins an item such as a file, file comment, or message from a specified Slack channel using a POST request.
+
+        Args:
+            channel (string): Channel where the item is pinned to.
+            timestamp (string): Timestamp of the message to un-pin.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2319,15 +3206,25 @@ class SlackApp(APIApplication):
         Tags:
             pins
         """
+        request_body = {
+            'channel': channel,
+            'timestamp': timestamp,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/pins.remove"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def reactions_add(self) -> dict[str, Any]:
+    def reactions_add(self, channel, name, timestamp) -> dict[str, Any]:
         """
         Adds a reaction to a Slack message using the Slack API and requires authentication.
+
+        Args:
+            channel (string): Channel where the message to add reaction to was posted.
+            name (string): Reaction (emoji) name.
+            timestamp (string): Timestamp of the message to add reaction to.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2335,9 +3232,15 @@ class SlackApp(APIApplication):
         Tags:
             reactions
         """
+        request_body = {
+            'channel': channel,
+            'name': name,
+            'timestamp': timestamp,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/reactions.add"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2390,9 +3293,16 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def reactions_remove(self) -> dict[str, Any]:
+    def reactions_remove(self, name, channel=None, file=None, file_comment=None, timestamp=None) -> dict[str, Any]:
         """
         Removes a reaction using the Slack API and requires a token for authentication with the necessary "reactions:write" scope.
+
+        Args:
+            name (string): Reaction (emoji) name.
+            channel (string): Channel where the message to remove reaction from was posted.
+            file (string): File to remove reaction from.
+            file_comment (string): File comment to remove reaction from.
+            timestamp (string): Timestamp of the message to remove reaction from.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2400,47 +3310,76 @@ class SlackApp(APIApplication):
         Tags:
             reactions
         """
+        request_body = {
+            'channel': channel,
+            'file': file,
+            'file_comment': file_comment,
+            'name': name,
+            'timestamp': timestamp,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/reactions.remove"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def reminders_add(self) -> dict[str, Any]:
+    def reminders_add(self, text, time, user=None) -> dict[str, Any]:
         """
         Creates a reminder in Slack using the provided parameters and authentication token.
 
+        Args:
+            text (string): The content of the reminder
+            time (string): When this reminder should happen: the Unix timestamp (up to five years from now), the number of seconds until the reminder (if within 24 hours), or a natural language description (Ex. "in 15 minutes," or "every Thursday")
+            user (string): The user who will receive the reminder. If no user is specified, the reminder will go to user who created it.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             reminders
         """
+        request_body = {
+            'text': text,
+            'time': time,
+            'user': user,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/reminders.add"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def reminders_complete(self) -> dict[str, Any]:
+    def reminders_complete(self, reminder=None) -> dict[str, Any]:
         """
         Marks a Slack reminder as complete using the Slack API and returns a status message.
 
+        Args:
+            reminder (string): The ID of the reminder to be marked as complete
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             reminders
         """
+        request_body = {
+            'reminder': reminder,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/reminders.complete"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def reminders_delete(self) -> dict[str, Any]:
+    def reminders_delete(self, reminder=None) -> dict[str, Any]:
         """
         Deletes a reminder in Slack using the provided token and returns a success or error response.
+
+        Args:
+            reminder (string): The ID of the reminder
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2448,9 +3387,13 @@ class SlackApp(APIApplication):
         Tags:
             reminders
         """
+        request_body = {
+            'reminder': reminder,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/reminders.delete"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2539,9 +3482,15 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def stars_add(self) -> dict[str, Any]:
+    def stars_add(self, channel=None, file=None, file_comment=None, timestamp=None) -> dict[str, Any]:
         """
         Adds a star to a GitHub repository using the GitHub API, requiring an authentication token for authorization.
+
+        Args:
+            channel (string): Channel to add star to, or channel where the message to add star to was posted (used with `timestamp`).
+            file (string): File to add star to.
+            file_comment (string): File comment to add star to.
+            timestamp (string): Timestamp of the message to add star to.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2549,9 +3498,16 @@ class SlackApp(APIApplication):
         Tags:
             stars
         """
+        request_body = {
+            'channel': channel,
+            'file': file,
+            'file_comment': file_comment,
+            'timestamp': timestamp,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/stars.add"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2578,9 +3534,15 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def stars_remove(self) -> dict[str, Any]:
+    def stars_remove(self, channel=None, file=None, file_comment=None, timestamp=None) -> dict[str, Any]:
         """
         Removes a star from an item on behalf of the authenticated user using a POST request with required authentication token.
+
+        Args:
+            channel (string): Channel to remove star from, or channel where the message to remove star from was posted (used with `timestamp`).
+            file (string): File to remove star from.
+            file_comment (string): File comment to remove star from.
+            timestamp (string): Timestamp of the message to remove star from.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2588,9 +3550,16 @@ class SlackApp(APIApplication):
         Tags:
             stars
         """
+        request_body = {
+            'channel': channel,
+            'file': file,
+            'file_comment': file_comment,
+            'timestamp': timestamp,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/stars.remove"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2701,41 +3670,69 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def usergroups_create(self) -> dict[str, Any]:
+    def usergroups_create(self, description=None, channels=None, handle=None, include_count=None, name=None) -> dict[str, Any]:
         """
         Creates a new User Group in Slack using the specified parameters and returns a usergroup object upon success, requiring the `usergroups:write` permission.
 
+        Args:
+            description (string): A short description of the User Group.
+            channels (string): A comma separated string of encoded channel IDs for which the User Group uses as a default.
+            handle (string): A mention handle. Must be unique among channels, users and User Groups.
+            include_count (boolean): Include the number of users in each User Group.
+            name (string): A name for the User Group. Must be unique among User Groups.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             usergroups
         """
+        request_body = {
+            'description': description,
+            'channels': channels,
+            'handle': handle,
+            'include_count': include_count,
+            'name': name,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/usergroups.create"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def usergroups_disable(self) -> dict[str, Any]:
+    def usergroups_disable(self, include_count=None, usergroup=None) -> dict[str, Any]:
         """
         Disables an existing Slack User Group using the Slack API and returns a success status message.
 
+        Args:
+            include_count (boolean): Include the number of users in the User Group.
+            usergroup (string): The encoded ID of the User Group to disable.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             usergroups
         """
+        request_body = {
+            'include_count': include_count,
+            'usergroup': usergroup,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/usergroups.disable"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def usergroups_enable(self) -> dict[str, Any]:
+    def usergroups_enable(self, include_count=None, usergroup=None) -> dict[str, Any]:
         """
         Enables a previously disabled Slack User Group using the Slack API and returns a status message.
+
+        Args:
+            include_count (boolean): Include the number of users in the User Group.
+            usergroup (string): The encoded ID of the User Group to enable.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2743,9 +3740,14 @@ class SlackApp(APIApplication):
         Tags:
             usergroups
         """
+        request_body = {
+            'include_count': include_count,
+            'usergroup': usergroup,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/usergroups.enable"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2771,9 +3773,17 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def usergroups_update(self) -> dict[str, Any]:
+    def usergroups_update(self, description=None, channels=None, handle=None, include_count=None, name=None, usergroup=None) -> dict[str, Any]:
         """
         Updates the properties of an existing Slack User Group, requiring a valid token and the `usergroups:write` permission to modify group details.
+
+        Args:
+            description (string): A short description of the User Group.
+            channels (string): A comma separated string of encoded channel IDs for which the User Group uses as a default.
+            handle (string): A mention handle. Must be unique among channels, users and User Groups.
+            include_count (boolean): Include the number of users in the User Group.
+            name (string): A name for the User Group. Must be unique among User Groups.
+            usergroup (string): The encoded ID of the User Group to update.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2781,9 +3791,18 @@ class SlackApp(APIApplication):
         Tags:
             usergroups
         """
+        request_body = {
+            'description': description,
+            'channels': channels,
+            'handle': handle,
+            'include_count': include_count,
+            'name': name,
+            'usergroup': usergroup,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/usergroups.update"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2808,9 +3827,14 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def usergroupsusers_update_list(self) -> dict[str, Any]:
+    def usergroupsusers_update_list(self, include_count=None, usergroup=None, users=None) -> dict[str, Any]:
         """
         Updates and replaces the entire list of users belonging to a specified Slack user group.
+
+        Args:
+            include_count (boolean): Include the number of users in the User Group.
+            usergroup (string): The encoded ID of the User Group to update.
+            users (string): A comma separated string of encoded user IDs that represent the entire list of users for the User Group.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2818,9 +3842,15 @@ class SlackApp(APIApplication):
         Tags:
             usergroups.users, usergroups
         """
+        request_body = {
+            'include_count': include_count,
+            'usergroup': usergroup,
+            'users': users,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/usergroups.users.update"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2848,9 +3878,12 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def users_delete_photo(self) -> dict[str, Any]:
+    def users_delete_photo(self, token) -> dict[str, Any]:
         """
         Deletes a user's photo using the Slack API and returns a status message, requiring the "users.profile:write" permission.
+
+        Args:
+            token (string): Authentication token. Requires scope: `users.profile:write`
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2858,9 +3891,13 @@ class SlackApp(APIApplication):
         Tags:
             users
         """
+        request_body = {
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/users.deletePhoto"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -2987,9 +4024,15 @@ class SlackApp(APIApplication):
         response.raise_for_status()
         return response.json()
 
-    def usersprofile_set_profile_info(self) -> dict[str, Any]:
+    def usersprofile_set_profile_info(self, name=None, profile=None, user=None, value=None) -> dict[str, Any]:
         """
         Updates a user's profile information, including name, email, and custom status, using the Slack API.
+
+        Args:
+            name (string): Name of a single key to set. Usable only if `profile` is not passed.
+            profile (string): Collection of key:value pairs presented as a URL-encoded JSON hash. At most 50 fields may be set. Each field name is limited to 255 characters.
+            user (string): ID of user to change. This argument may only be specified by team admins on paid teams.
+            value (string): Value to set a single key to. Usable only if `profile` is not passed.
 
         Returns:
             dict[str, Any]: Typical success response
@@ -2997,9 +4040,16 @@ class SlackApp(APIApplication):
         Tags:
             users.profile, users
         """
+        request_body = {
+            'name': name,
+            'profile': profile,
+            'user': user,
+            'value': value,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/users.profile.set"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -3015,29 +4065,47 @@ class SlackApp(APIApplication):
         """
         url = f"{self.base_url}/users.setActive"
         query_params = {}
-        response = self._post(url, data={}, params=query_params)
+        response = self._post(url, data={}, params=query_params, content_type='application/json')
         response.raise_for_status()
         return response.json()
 
-    def users_set_photo(self) -> dict[str, Any]:
+    def users_set_photo(self, token, crop_w=None, crop_x=None, crop_y=None, image=None) -> dict[str, Any]:
         """
         Updates a Slack user's profile image using the `POST` method, requiring a valid authentication token with the `users.profile:write` scope and supporting optional image cropping parameters.
 
+        Args:
+            token (string): Authentication token. Requires scope: `users.profile:write`
+            crop_w (string): Width/height of crop box (always square)
+            crop_x (string): X coordinate of top-left corner of crop box
+            crop_y (string): Y coordinate of top-left corner of crop box
+            image (string): File contents via `multipart/form-data`.
+
         Returns:
             dict[str, Any]: Typical success response
 
         Tags:
             users
         """
+        request_body = {
+            'crop_w': crop_w,
+            'crop_x': crop_x,
+            'crop_y': crop_y,
+            'image': image,
+            'token': token,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/users.setPhoto"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
-    def users_set_presence(self) -> dict[str, Any]:
+    def users_set_presence(self, presence) -> dict[str, Any]:
         """
         Manually sets the calling user's presence status in Slack to either "away" or "auto" using a POST request and returns a success indicator.
+
+        Args:
+            presence (string): Either `auto` or `away`
 
         Returns:
             dict[str, Any]: Typical success response
@@ -3045,9 +4113,13 @@ class SlackApp(APIApplication):
         Tags:
             users
         """
+        request_body = {
+            'presence': presence,
+        }
+        request_body = {k: v for k, v in request_body.items() if v is not None}
         url = f"{self.base_url}/users.setPresence"
         query_params = {}
-        response = self._post(url, data=request_body, params=query_params)
+        response = self._post(url, data=request_body, params=query_params, content_type='application/x-www-form-urlencoded')
         response.raise_for_status()
         return response.json()
 
@@ -3199,27 +4271,174 @@ class SlackApp(APIApplication):
 
     def list_tools(self):
         return [
+            self.adminapps_approve_app_installation,
             self.adminappsapproved_list,
             self.adminappsrequests_list,
+            self.adminapps_restrict_app,
             self.adminappsrestricted_get_list,
+            self.adminconversations_archive_channel,
+            self.adminconversations_convert_to_private_channel,
+            self.adminconversations_create_channel_based_conversation,
+            self.adminconversations_delete_channel,
+            self.adminconversations_disconnect_shared_channel,
             self.adminconversationsekm_list_original_connected_channel_info,
             self.adminconversations_get_conversation_prefs,
             self.adminconversations_get_teams_list,
+            self.adminconversations_invite_user_to_channel,
+            self.adminconversations_rename_channel,
+            self.adminconversationsrestrict_access_add_group_idp_groups,
             self.adminconversationsrestrict_access_list_groups,
+            self.adminconversationsrestrict_access_remove_idp_group,
+            self.adminconversations_search_channels,
+            self.adminconversations_set_conversation_prefs,
+            self.adminconversations_set_teams_workspace_connection,
+            self.adminconversations_unarchive_channel,
+            self.adminemoji_add_emoji,
+            self.adminemoji_alias_add,
+            self.adminemoji_list_enterprise_emoji,
+            self.adminemoji_remove_enterprise_emoji,
+            self.adminemoji_rename_emoji,
+            self.admininvite_requests_approve_request,
+            self.admininvite_requestsapproved_list,
+            self.admininvite_requestsdenied_list,
+            self.admininvite_requests_deny_request,
+            self.admininvite_requests_list_pending_workspace_invite_requests,
             self.adminteamsadmins_get_all,
+            self.adminteams_create_enterprise_team,
             self.adminteams_list_all,
             self.adminteamsowners_list_owners,
             self.adminteamssettings_get_info,
+            self.adminteamssettings_set_default_channels,
+            self.adminteamssettings_set_description,
+            self.adminteamssettings_set_discoverability_of_workspace,
+            self.adminteamssettings_set_icon,
+            self.adminteamssettings_set_name,
+            self.adminusergroups_add_default_channels,
+            self.adminusergroups_associate_default_workspaces,
+            self.adminusergroups_list_channels_get,
+            self.adminusergroups_remove_channels,
+            self.adminusers_add_workspace_user,
+            self.adminusers_invite_user_to_workspace,
+            self.adminusers_list_workspace_users,
+            self.adminusers_remove_user_from_workspace,
+            self.adminuserssession_invalidate_session,
+            self.adminuserssession_reset_sessions,
+            self.adminusers_set_admin_user,
+            self.adminusers_set_expiration_guest,
+            self.adminusers_set_workspace_owner,
+            self.adminusers_set_regular_user,
+            self.api_test,
+            self.appseventauthorizations_get_list,
+            self.appspermissions_list_permissions,
+            self.appspermissions_additional_scopes_request,
+            self.appspermissionsresources_get_resources_list,
+            self.appspermissionsscopes_get_list,
+            self.appspermissionsusers_list_user_grants,
+            self.appspermissionsusers_request_modal,
+            self.apps_uninstall,
+            self.auth_revoke,
+            self.auth_test,
+            self.bots_info,
+            self.calls_add,
+            self.calls_end,
+            self.calls_info,
+            self.callsparticipants_add_new_participant,
+            self.callsparticipants_register_removed,
+            self.calls_update,
+            self.chat_delete,
+            self.chat_delete_scheduled_message,
+            self.chat_get_permalink,
+            self.chat_me_message,
+            self.chat_post_ephemeral,
+            self.chat_post_message,
+            self.chat_schedule_message,
+            self.chatscheduled_messages_list,
+            self.chat_unfurl,
+            self.chat_update,
+            self.conversations_archive,
+            self.conversations_close,
+            self.conversations_create,
+            self.conversations_history,
+            self.conversations_info,
+            self.conversations_invite,
+            self.conversations_join,
+            self.conversations_kick,
+            self.conversations_leave,
+            self.conversations_list,
+            self.conversations_mark,
+            self.conversations_members,
+            self.conversations_open,
+            self.conversations_rename,
+            self.conversations_replies,
+            self.conversations_set_purpose,
+            self.conversations_set_topic,
+            self.conversations_unarchive,
+            self.dialog_open,
+            self.dnd_end_dnd,
+            self.dnd_end_snooze,
+            self.dnd_info,
+            self.dnd_set_snooze,
+            self.dnd_team_info,
+            self.emoji_list,
+            self.filescomments_delete_comment,
+            self.files_delete,
+            self.files_info,
+            self.files_list,
+            self.filesremote_add_from_remote,
+            self.filesremote_get_info,
+            self.filesremote_list_remote_files,
+            self.filesremote_delete_file,
+            self.filesremote_share_remote_file,
+            self.filesremote_update_remote_file,
+            self.files_revoke_public_url,
+            self.files_shared_public_url,
+            self.files_upload,
+            self.migration_exchange,
+            self.oauth_access,
+            self.oauth_token,
+            self.oauthv2_exchange_token,
+            self.pins_add,
+            self.pins_list,
+            self.pins_remove,
+            self.reactions_add,
+            self.reactions_get,
+            self.reactions_list,
+            self.reactions_remove,
+            self.reminders_add,
+            self.reminders_complete,
+            self.reminders_delete,
+            self.reminders_info,
+            self.reminders_list,
+            self.rtm_connect,
+            self.search_messages,
+            self.stars_add,
+            self.stars_list,
+            self.stars_remove,
+            self.team_access_logs,
+            self.team_billable_info,
+            self.team_info,
+            self.team_integration_logs,
             self.teamprofile_get_profile,
+            self.usergroups_create,
+            self.usergroups_disable,
+            self.usergroups_enable,
             self.usergroups_list,
+            self.usergroups_update,
             self.usergroupsusers_list_all_users,
+            self.usergroupsusers_update_list,
             self.users_conversations,
+            self.users_delete_photo,
             self.users_get_presence,
             self.users_identity,
             self.users_info,
             self.users_list,
             self.users_lookup_by_email,
             self.usersprofile_get_profile_info,
+            self.usersprofile_set_profile_info,
+            self.users_set_active,
+            self.users_set_photo,
+            self.users_set_presence,
+            self.views_open,
             self.views_publish,
             self.views_push,
             self.views_update,
